@@ -38,28 +38,26 @@ RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bash_profile
 RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
 RUN /bin/bash -c "source ~/.bashrc"	
 
+RUN ln -sfn /opt/mssql-tools/bin/sqlcmd /usr/bin/sqlcmd 
+
 ## installing extension for SQL Server
 RUN apt-get install unixodbc-dev
 RUN pecl install sqlsrv &&\
 	pecl install pdo_sqlsrv
 
-# Config php.ini for CLI & NGINX
-ENV phpversion="7.2"
-ENV phpini="/etc/php/$phpversion/fpm/php.ini"
+# Set the locale
+RUN apt-get clean && apt-get update && apt-get install -y locales
+RUN locale-gen en_US.UTF-8	
 
-RUN echo "" >> $phpini &&\
-echo "# Extensions for Microsoft SQL Server Driver" >> $phpini &&\
-echo "extension=sqlsrv.so" >> $phpini &&\
-echo "extension=pdo_sqlsrv.so" >> $phpini &&\
-echo "" >> $phpini
+RUN echo "nb_NO.UTF-8 UTF-8" > /etc/locale.gen &&\
+	echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen &&\
+	locale-gen
+RUN /opt/mssql-tools/bin/sqlcmd
 
-ENV phpini="/etc/php/$phpversion/cli/php.ini"
+RUN echo extension=pdo_sqlsrv.so >> `php --ini | grep "Scan for additional .ini files" | sed -e "s|.*:\s*||"`/30-pdo_sqlsrv.ini
+RUN echo extension=sqlsrv.so >> `php --ini | grep "Scan for additional .ini files" | sed -e "s|.*:\s*||"`/20-sqlsrv.ini
 
-RUN echo "" >> $phpini &&\
-echo "# Extensions for Microsoft SQL Server Driver" >> $phpini &&\
-echo "extension=sqlsrv.so" >> $phpini &&\
-echo "extension=pdo_sqlsrv.so" >> $phpini &&\
-echo "" >> $phpini
+RUN ln -s /etc/php/7.2/mods-available/sqlsrv.ini /etc/php/7.2/fpm/conf.d/20-sqlsrv.ini
 
 RUN service php7.2-fpm restart
 
