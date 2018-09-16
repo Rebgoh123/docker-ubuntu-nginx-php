@@ -38,6 +38,31 @@ RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bash_profile
 RUN echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
 RUN /bin/bash -c "source ~/.bashrc"	
 
+## installing extension for SQL Server
+RUN apt-get install unixodbc-dev
+RUN pecl install sqlsrv &&\
+	pecl install pdo_sqlsrv
+
+# Config php.ini for CLI & NGINX
+ENV phpversion="7.2"
+ENV phpini="/etc/php/$phpversion/fpm/php.ini"
+
+RUN echo "" >> $phpini &&\
+echo "# Extensions for Microsoft SQL Server Driver" >> $phpini &&\
+echo "extension=sqlsrv.so" >> $phpini &&\
+echo "extension=pdo_sqlsrv.so" >> $phpini &&\
+echo "" >> $phpini
+
+ENV phpini="/etc/php/$phpversion/cli/php.ini"
+
+RUN echo "" >> $phpini &&\
+echo "# Extensions for Microsoft SQL Server Driver" >> $phpini &&\
+echo "extension=sqlsrv.so" >> $phpini &&\
+echo "extension=pdo_sqlsrv.so" >> $phpini &&\
+echo "" >> $phpini
+
+RUN service php7.2-fpm restart
+
 ## COPY command simply copies a file from the host filesystem into the image when the image is building
 COPY start.sh /start.sh
 COPY nginx.conf /etc/nginx/nginx.conf
