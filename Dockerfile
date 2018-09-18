@@ -87,7 +87,7 @@ RUN find / \( -iname "php.ini" -o -name "." \)
 
 RUN sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g" \
 -e "s/variables_order = \"GPCS\"/variables_order = \"EGPCS\"/g" \
-/etc/php/7.2/cli/php.ini && \
+/etc/php/7.2/fpm/php.ini && \
 sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" \
 -e "s/;catch_workers_output\s*=\s*yes/catch_workers_output = yes/g" \
 -e "s/user = nobody/user = nginx/g" \
