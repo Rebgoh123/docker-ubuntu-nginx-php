@@ -58,7 +58,9 @@ RUN echo extension=pdo_sqlsrv.so >> `php --ini | grep "Scan for additional .ini 
 RUN echo extension=sqlsrv.so >> `php --ini | grep "Scan for additional .ini files" | sed -e "s|.*:\s*||"`/20-sqlsrv.ini
 
 RUN ln -s /etc/php/7.2/mods-available/sqlsrv.ini /etc/php/7.2/fpm/conf.d/20-sqlsrv.ini
-RUN ln -s /etc/php/7.2/mods-available/sqlsrv.ini /etc/php/7.2/fpm/conf.d/30-pdo_sqlsrv.ini
+
+# Copy pdo sql server over to fpm php
+RUN cp /etc/php/7.2/cli/conf.d/30-pdo_sqlsrv.ini /etc/php/7.2/fpm/conf.d/30-pdo_sqlsrv.ini
 
 RUN service php7.2-fpm restart
 
